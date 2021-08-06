@@ -1,0 +1,148 @@
+
+CREATE DATABASE PCLINICS_KAUE;
+GO
+
+USE PCLINICS_KAUE;
+GO
+
+CREATE TABLE CLINICA(
+ idClinica TINYINT PRIMARY KEY IDENTITY(1,1),
+ nomeClinica VARCHAR(30) NOT NULL,
+ cnpj VARCHAR(30) NOT NULL UNIQUE,
+ endereco VARCHAR(100) NOT NULL UNIQUE
+);
+GO
+
+INSERT INTO CLINICA(nomeClinica, cnpj, endereco)
+VALUES ('PLENA', '5555555', 'Avenida Imperador, n 175'), ('COBASE', '777777777', 'Rua Belo Sol, n 12');
+GO
+
+SELECT * FROM CLINICA
+
+CREATE TABLE VETERINARIO(
+ idVet TINYINT PRIMARY KEY IDENTITY(1,1),
+ idClinica TINYINT FOREIGN KEY REFERENCES CLINICA(idClinica),
+ nomeVet VARCHAR(20) NOT NULL,
+ crmv VARCHAR(6) NOT NULL UNIQUE
+);
+GO
+
+INSERT INTO VETERINARIO(idClinica, nomeVet, crmv)
+VALUES (2, 'LUCAS', '758214'), (1, 'SAULO', '456892'), (1, 'JOÃO', '820345');
+GO
+
+DELETE FROM VETERINARIO
+WHERE idVet = 2;
+GO
+
+SELECT * FROM VETERINARIO
+
+CREATE TABLE TIPOPET(
+ idTipo TINYINT PRIMARY KEY IDENTITY(1,1),
+ nomeTipo VARCHAR(20) NOT NULL UNIQUE
+);
+GO
+
+INSERT INTO TIPOPET(nomeTipo)
+VALUES ('GATO'), ('CACHORRO'), ('COELHO');
+GO
+
+SELECT * FROM TIPOPET
+
+CREATE TABLE RACA(
+ idRaca SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idTipo TINYINT FOREIGN KEY REFERENCES TIPOPET(idTipo),
+ nomeRaca VARCHAR(25) NOT NULL
+);
+GO
+
+INSERT INTO RACA(idTipo, nomeRaca)
+VALUES (1, 'MUCHKIN'), (2, 'RETRIEVER'), (3, 'MINI LOP');
+GO
+
+SELECT * FROM RACA
+
+CREATE TABLE DONO(
+ idDono SMALLINT PRIMARY KEY IDENTITY(1,1),
+ nomeDono VARCHAR(25) NOT NULL
+);
+GO
+
+INSERT INTO DONO(nomeDono)
+VALUES ('MURILLO'), ('NAYARA');
+GO
+
+SELECT * FROM DONO
+
+CREATE TABLE PET(
+ idPet SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idRaca SMALLINT FOREIGN KEY REFERENCES RACA(idRaca),
+ idDono SMALLINT FOREIGN KEY REFERENCES DONO(idDono),
+ nomePet VARCHAR(20) NOT NULL,
+);
+GO
+
+INSERT INTO PET(idRaca, idDono, nomePet)
+VALUES (2, 2, 'TOBBY'), (1, 1, 'SUZANE');
+GO
+
+SELECT * FROM PET
+
+CREATE TABLE ATENDIMENTO(
+ idAtendimento SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idPet SMALLINT FOREIGN KEY REFERENCES PET(idPet),
+ idVet TINYINT FOREIGN KEY REFERENCES VETERINARIO(idVet)
+);
+GO
+
+INSERT INTO ATENDIMENTO(idPet, idVet)
+VALUES (2,1), (1,3);
+GO
+
+SELECT * FROM ATENDIMENTO
+
+-- listar todos os veterinários (nome e CRMV) de uma clínica (razão social)
+
+SELECT VETERINARIO.nomeVet, VETERINARIO.crmv, CLINICA.nomeClinica FROM VETERINARIO
+INNER JOIN CLINICA
+ON VETERINARIO.idClinica = CLINICA.idClinica
+WHERE CLINICA.nomeClinica = 'PLENA';
+GO
+
+-- listar todas as raças que começam com a letra S
+
+SELECT RACA.nomeRaca FROM RACA
+WHERE RACA.nomeRaca LIKE 'S%';
+GO
+
+-- listar todos os tipos de pet que terminam com a letra O
+
+SELECT TIPOPET.nomeTipo FROM TIPOPET
+WHERE TIPOPET.nomeTipo LIKE '%O';
+GO
+
+-- listar todos os pets mostrando os nomes dos seus donos
+
+SELECT PET.nomePet, DONO.nomeDono FROM PET
+INNER JOIN DONO
+ON PET.idDono = DONO.idDono;
+GO
+
+-- listar todos os atendimentos mostrando o nome do veterinário que atendeu, 
+-- o nome, a raça e o tipo do pet que foi atendido,
+-- o nome do dono do pet e o nome da clínica onde o pet foi atendido
+
+SELECT VETERINARIO.nomeVet, PET.nomePet, RACA.nomeRaca, TIPOPET.nomeTipo, DONO.nomeDono, CLINICA.nomeClinica FROM ATENDIMENTO
+INNER JOIN VETERINARIO
+ON ATENDIMENTO.idVet = VETERINARIO.idVet
+INNER JOIN PET
+ON ATENDIMENTO.idPet = PET.idPet
+INNER JOIN RACA
+ON PET.idRaca = RACA.idRaca
+INNER JOIN TIPOPET
+ON RACA.idTipo = TIPOPET.idTipo
+INNER JOIN DONO
+ON PET.idDono = DONO.idDono
+INNER JOIN CLINICA
+ON VETERINARIO.idClinica = CLINICA.idClinica;
+GO

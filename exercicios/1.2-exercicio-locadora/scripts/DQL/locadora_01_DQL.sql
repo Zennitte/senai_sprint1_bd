@@ -1,0 +1,116 @@
+CREATE DATABASE LOCADORA_KAUE;
+GO
+
+USE LOCADORA_KAUE;
+GO
+
+CREATE TABLE EMPRESA(
+ idEmpresa SMALLINT PRIMARY KEY IDENTITY(1,1),
+ nomeEmpresa VARCHAR(30) NOT NULL
+);
+GO
+
+INSERT INTO EMPRESA(nomeEmpresa)
+VALUES ('SPACE'), ('SENAI');
+GO
+
+SELECT * FROM EMPRESA
+
+CREATE TABLE MARCA(
+ idMarca SMALLINT PRIMARY KEY IDENTITY(1,1),
+ nomeMarca VARCHAR(20) NOT NULL
+);
+GO
+
+INSERT INTO MARCA(nomeMarca)
+VALUES ('FORD'), ('TESLA');
+GO
+
+UPDATE MARCA SET nomeMarca = 'HYUNDAI'
+WHERE idMarca = 1
+
+SELECT * FROM MARCA
+
+CREATE TABLE MODELO(
+ idModelo SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idMarca SMALLINT FOREIGN KEY REFERENCES MARCA(idMarca),
+ nomeModelo VARCHAR(25) NOT NULL
+);
+GO
+
+INSERT INTO MODELO(idMarca, nomeModelo)
+VALUES (1, 'HB20'), (2, 'CYBERTRUCK');
+GO
+
+SELECT * FROM MODELO
+
+CREATE TABLE VEICULO(
+ idVeiculo SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idModelo SMALLINT FOREIGN KEY REFERENCES MODELO(idModelo),
+ idEmpresa SMALLINT FOREIGN KEY REFERENCES EMPRESA(idEmpresa),
+ placa VARCHAR(10) NOT NULL
+);
+GO
+
+INSERT INTO VEICULO(idModelo, idEmpresa, placa)
+VALUES (2, 2, '3333');
+GO
+
+INSERT INTO VEICULO(idModelo, idEmpresa, placa)
+VALUES (1, 1, '4444');
+GO
+
+SELECT * FROM VEICULO
+
+CREATE TABLE CLIENTE(
+ idCLiente SMALLINT PRIMARY KEY IDENTITY(1,1),
+ nomeCliente VARCHAR(25) NOT NULL,
+ cpfCliente VARCHAR(13) NOT NULL
+);
+GO
+
+INSERT INTO CLIENTE(nomeCliente, cpfCliente)
+VALUES ('LUCAS', '111111'), ('SAULO', '222222');
+GO
+
+SELECT * FROM CLIENTE
+
+CREATE TABLE ALUGUEL(
+ idAluguel SMALLINT PRIMARY KEY IDENTITY(1,1),
+ idVeiculo SMALLINT FOREIGN KEY REFERENCES VEICULO(idVeiculo),
+ idCliente SMALLINT FOREIGN KEY REFERENCES CLIENTE(idCliente),
+ dataInicio DATE NOT NULL,
+ dataFim DATE NOT NULL
+);
+GO
+
+INSERT INTO ALUGUEL(idVeiculo, idCliente, dataInicio, dataFim)
+VALUES(1, 2, '08/09/2021', '10/09/2021' ), (2, 1, '07/09/2021', '08/09/2021');
+GO
+
+SELECT * FROM ALUGUEL
+
+-- listar todos os alugueis mostrando as datas de início e fim,
+-- o nome do cliente que alugou e nome do modelo do carro
+
+SELECT ALUGUEL.dataFim, ALUGUEL.dataFim, CLIENTE.nomeCliente, MODELO.nomeModelo FROM ALUGUEL
+INNER JOIN CLIENTE
+ON ALUGUEL.idCliente = CLIENTE.idCLiente
+INNER JOIN VEICULO
+ON ALUGUEL.idVeiculo = VEICULO.idVeiculo
+INNER JOIN MODELO
+ON MODELO.idModelo = VEICULO.idModelo;
+GO
+
+-- listar os alugueis de um determinado cliente mostrando seu nome, 
+-- as datas de início e fim e o nome do modelo do carro
+
+SELECT ALUGUEL.dataFim, ALUGUEL.dataFim, CLIENTE.nomeCliente, MODELO.nomeModelo FROM ALUGUEL
+INNER JOIN CLIENTE
+ON ALUGUEL.idCliente = CLIENTE.idCLiente
+INNER JOIN VEICULO
+ON ALUGUEL.idVeiculo = VEICULO.idVeiculo
+INNER JOIN MODELO
+ON MODELO.idModelo = VEICULO.idModelo
+WHERE CLIENTE.nomeCliente = 'LUCAS';
+GO
